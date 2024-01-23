@@ -45,4 +45,11 @@ const Grade = sequelize.define('Grade', {
     }
 });
 
+// Add a one-to-many relationship between Student and Grade
+// One student can have many grades
+// Добавляем связь "один ко многим" между Student и Grade
+// Один студент может иметь много оценок
+Student.hasMany(Grade, { foreignKey: 'personalCode' });
+Grade.belongsTo(Student, { foreignKey: 'personalCode' });
+
 module.exports = { sequelize, Student, Grade };
