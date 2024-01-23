@@ -9,15 +9,28 @@ app.use(express.json());
 // Эндпоинт для получения лога оценок с пагинацией и сортировкой
 app.get('/log', async (req, res) => {
   try {
+    // Extracting query parameters for pagination and sorting
+    // Извлечение параметров запроса для пагинации и сортировки
     const { page = 1, pageSize = 10, sortBy = 'createdAt' } = req.query;
 
-    const grades = await Grade.findAll({
+    // Querying grades with included student information for pagination and sorting
+    // Запрос оценок с включенной информацией о студенте для пагинации и сортировки
+
+    const grades = await Grade.findAndCountAll({
+      include: [{ model: Student, attributes: ['personalCode', 'name', 'lastName'] }],
       order: [[sortBy, 'ASC']],
       limit: pageSize,
       offset: (page - 1) * pageSize
     });
 
-    res.json(grades);
+    // Responding with paginated and sorted log of grades
+    // Ответ с отсортированным и разбитым на страницы логом оценок
+    res.json({
+      totalItems: grades.count,
+      totalPages: Math.ceil(grades.count / pageSize),
+      currentPage: parseInt(page, 10),
+      items: grades.rows
+    });
   } catch (error) {
     console.error('Error fetching log:', error);
     res.status(500).json({ error: 'Internal Server Error' });
